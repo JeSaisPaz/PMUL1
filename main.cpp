@@ -14,7 +14,7 @@ int pin_led_rouge = A3;
   // On declare la variable globale de la pin pour la LED verte
 int pin_led_verte = A4;
   // On declare la variable globale pour le choix du menu car sinon elle se remet a zero a chaque boucle de loop()
-int menu_screen = 1;
+int menu_screen = 1;  // Correction : pas de pointeur ici
   // On declare la variable globale pour l'état actuel du bouton
 bool status_boutton = LOW;
   // On declare la variable globale pour l'ancien état du bouton
@@ -24,25 +24,31 @@ bool old_status_boutton = LOW;
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
   // Fonction qui va afficher l'entete en fonction de si ca vient du LM35 ou du potard
-void entete(bool isLM35) {
-  if (isLM35 == True) {
-      // Si ca vient du LM35 on dit temperature
-    lcd.print("Temperature en F");
-  }
-  else {
-      // Si ca vient du potard on dit declancheur
-    lcd.print("Declancheur en F");
-  }
-
+void entete(int isLM35, int menu_screen) {
+    // En gros, ce switch affiche l'unite en fonction de la position dans le menu (Le plus opti possible que j'ai su faire), ce qui explique les cases doubles
+  lcd.print(isLM35 ? "Temperature en " : "Declencheur en ");
+  switch(menu_screen) {
+      case 1:
+      case 4:
+        lcd.print("C");
+        break;
+      case 2:
+      case 5:
+        lcd.print("F");
+        break;
+      case 3:
+      case 6:
+        lcd.print("K");
+        break;
+    }
 }
 
   // Fonction pour obtenir la valeur en mv sortant du LM35
 float valeurmv(int pin) {
     // On lit la valeur en mv de la pin A0
   int sensorValue = analogRead(pin);
-    // On assigne voltage a la valeur sur la pin A0
-    // CORRECTION: Je reconverti la valeur en mv reel car c'etait pas bon
-  float voltage = sensorValue * (5000.0 / 1023.0); // pour une alim 5V
+    // On assigne voltage a la valeur sur la pin 
+  float voltage = sensorValue * (5000.0 / 1023.0); // CORRECTION: Je reconverti la valeur en mv reel car c'etait pas bon
     // On renvoie le voltage
   return voltage; 
 
@@ -53,7 +59,7 @@ void celcius(int pin, int isLM35) {
     // On met le curseur en 0,0 pour commencer l'ecriture
   lcd.setCursor(0, 0); 
     // On affiche l'entete
-  entete(isLM35);
+  entete(isLM35, menu_screen);  // Correction : passe menu_screen ici
     // Affiche le symbole temperature
   lcd.print(char(223));
     // On se met en 4,1 pour afficher la valeur de la temperature au milieu
@@ -70,7 +76,7 @@ void fahrenheit(int pin, int isLM35) {
     // On met le curseur en 0,0 pour commencer l'ecriture
   lcd.setCursor(0, 0); 
     // On affiche l'entete
-  entete(isLM35);
+  entete(isLM35, menu_screen);  // Correction : passe menu_screen ici
     // Affiche le symbole temperature
   lcd.print(char(223)); 
      // On se met en 4,1 pour afficher la valeur de la temperature au milieu
@@ -87,7 +93,7 @@ void kelvin(int pin, int isLM35) {
     // On met le curseur en 0,0 pour commencer l'ecriture
   lcd.setCursor(0, 0); 
     // On affiche l'entete
-  entete(isLM35);
+  entete(isLM35, menu_screen);  // Correction : passe menu_screen ici
     // Affiche le symbole temperature
   lcd.print(char(223));
     // On se met en 4,1 pour afficher la valeur de la temperature au milieu
@@ -115,13 +121,17 @@ void setup() {
 
 void loop() {
     // On compare la valeur en mv de la temperature et celle du potard
-  if (valeurmv(pin_temp) >valeurmv(pin_check)) {
-      //Si la valeur de la temperature est plus haute on active la led rouge
-    digitalWrite(A3,HIGH);
+  if (valeurmv(pin_temp) > valeurmv(pin_check)) {
+      // Si la valeur de la temperature est plus haute on active la led rouge
+    digitalWrite(pin_led_rouge, HIGH);
+      // On eteinds la led verte sinon on y comprend plus rien
+    digitalWrite(pin_led_verte, LOW);
   }
   else {
       // Si la valeur de la temperature est inferieure on active la led verte
-    digitalWrite(A4,HIGH);
+    digitalWrite(pin_led_verte, HIGH);
+      // On eteinds la led rouge sinon on y comprend plus rien
+    digitalWrite(pin_led_rouge, LOW);  // Correction : éteindre la LED rouge
   }
 
     // On lit la valeur de la pin du bouton
@@ -136,7 +146,7 @@ void loop() {
       menu_screen = 1;
     }
     // Anti-rebond simple
-    delay(200);
+    delay(100);
 
   }
 
@@ -146,13 +156,22 @@ void loop() {
     // Switch pour les différents menus possibles et appel de leurs fonctions respectives
   switch (menu_screen) {
       // Partie du menu pour afficher la température du LM35 sous plusieurs unités
-    case 1: celcius(pin_temp, True); break;
-    case 2: fahrenheit(pin_temp, True); break;
-    case 3: kelvin(pin_temp, True); break;
+    case 1: 
+      celcius(pin_temp, True); 
+      break;
+    case 2: 
+      fahrenheit(pin_temp, True); 
+      break;
+    case 3: 
+      kelvin(pin_temp, True); 
+      break;
       // Partie du menu pour afficher la température de comparaison du potard sous plusieurs unités
-    case 4: celcius(pin_check, False); break;
-    case 5: fahrenheit(pin_check, False); break;
-    case 6: kelvin(pin_check, False); break;   
+    case 4: 
+      celcius(pin_check, False); break;
+    case 5: 
+      fahrenheit(pin_check, False); break;
+    case 6: 
+      kelvin(pin_check, False); break;   
     default: break;
   }
 

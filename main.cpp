@@ -51,58 +51,41 @@ float valeurmv(int pin) {
   float voltage = sensorValue * (5000.0 / 1023.0); // CORRECTION: Je reconverti la valeur en mv reel car c'etait pas bon
     // On renvoie le voltage
   return voltage; 
-
 }
 
-  // Prends une valeur en mv a partir d'une pin et renvoie la temperature en celcius
-void celcius(int pin, int isLM35) {
+  // Fonction factorisée pour afficher la température sur le LCD
+void afficher_temperature(int pin, bool isLM35, char unite) {
     // On met le curseur en 0,0 pour commencer l'ecriture
-  lcd.setCursor(0, 0); 
+  lcd.setCursor(0, 0);
     // On affiche l'entete
-  entete(isLM35, menu_screen);  // Correction : passe menu_screen ici
+  entete(isLM35, menu_screen);
     // Affiche le symbole temperature
   lcd.print(char(223));
     // On se met en 4,1 pour afficher la valeur de la temperature au milieu
   lcd.setCursor(4, 1);
-    // On divise la valeur en mv par 10 pour obtenir la valeur en celcius (Voir datasheet) et on la met dans une variable temporaire
-  float temp = (valeurmv(pin)) / 10;
+
+    // On converti d'abord en Celsius
+  float tempC = valeurmv(pin) / 10.0;
+
+  float temp;
+    // Conversion selon l'unité
+  switch (unite) {
+    case 'C':
+      temp = tempC;
+      break;
+    case 'F':
+      temp = tempC * 9.0 / 5.0 + 32;
+      break;
+    case 'K':
+      temp = tempC + 273.15;
+      break;
+    default:
+      temp = tempC;
+      break;
+  }
+
     // On affiche la valeur
   lcd.print(temp);
-
-}
-
-  // Prends une valeur en mv a partir d'une pin et renvoie la temperature en fahrenheit
-void fahrenheit(int pin, int isLM35) {
-    // On met le curseur en 0,0 pour commencer l'ecriture
-  lcd.setCursor(0, 0); 
-    // On affiche l'entete
-  entete(isLM35, menu_screen);  // Correction : passe menu_screen ici
-    // Affiche le symbole temperature
-  lcd.print(char(223)); 
-     // On se met en 4,1 pour afficher la valeur de la temperature au milieu
-  lcd.setCursor(4, 1);
-    // On converti la valeur en farenheit a partir des mv et on l'assigne a temp 
-  float temp = (valeurmv(pin) / 10) * (9.0 / 5.0) + 32;
-    // On affiche la valeur
-  lcd.print(temp);  
-
-}
-
-  // Prends une valeur en mv a partir d'une pin et renvoie la temperature en kelvin
-void kelvin(int pin, int isLM35) {
-    // On met le curseur en 0,0 pour commencer l'ecriture
-  lcd.setCursor(0, 0); 
-    // On affiche l'entete
-  entete(isLM35, menu_screen);  // Correction : passe menu_screen ici
-    // Affiche le symbole temperature
-  lcd.print(char(223));
-    // On se met en 4,1 pour afficher la valeur de la temperature au milieu
-  lcd.setCursor(4, 1);
-    // On converti la valeur en kelvin a partir des mv et on l'assigne a temp 
-  float temp = (valeurmv(pin)) / 10 + 273.15;
-    // On affiche la valeur
-  lcd.print(temp);
-
 }
 
 void setup() {
@@ -116,7 +99,6 @@ void setup() {
   pinMode(pin_led_rouge, OUTPUT);
     // Je set la pin A4 en output pour allumer une LED verte quand la temperature ne depasse pas le seuil
   pinMode(pin_led_verte, OUTPUT);
-
 }
 
 void loop() {
@@ -147,7 +129,6 @@ void loop() {
     }
     // Anti-rebond simple
     delay(100);
-
   }
 
     // On sauvegarde l'état actuel pour le prochain tour
@@ -157,22 +138,25 @@ void loop() {
   switch (menu_screen) {
       // Partie du menu pour afficher la température du LM35 sous plusieurs unités
     case 1: 
-      celcius(pin_temp, True); 
+      afficher_temperature(pin_temp, True, 'C'); 
       break;
     case 2: 
-      fahrenheit(pin_temp, True); 
+      afficher_temperature(pin_temp, True, 'F'); 
       break;
     case 3: 
-      kelvin(pin_temp, True); 
+      afficher_temperature(pin_temp, True, 'K'); 
       break;
       // Partie du menu pour afficher la température de comparaison du potard sous plusieurs unités
     case 4: 
-      celcius(pin_check, False); break;
+      afficher_temperature(pin_check, False, 'C'); 
+      break;
     case 5: 
-      fahrenheit(pin_check, False); break;
+      afficher_temperature(pin_check, False, 'F'); 
+      break;
     case 6: 
-      kelvin(pin_check, False); break;   
-    default: break;
+      afficher_temperature(pin_check, False, 'K'); 
+      break;   
+    default: 
+      break;
   }
-
 }

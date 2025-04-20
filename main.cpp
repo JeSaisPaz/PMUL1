@@ -1,20 +1,18 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
-#define True 1
-#define False 0
 
   // On declare la variable globale de la pin pour la temperature du LM35
-int pin_temp = A0;
+const int pin_temp = A0;
   // On declare la variable globale de la pin pour la temperature de check du potard
-int pin_check = A1;
+const int pin_check = A1;
   // On declare la variable globale de la pin pour le boutton de navigation des differents menus
-int pin_button = A2;
+const int pin_button = A2;
   // On declare la variable globale de la pin pour la LED rouge
-int pin_led_rouge = A3;
+const int pin_led_rouge = A3;
   // On declare la variable globale de la pin pour la LED verte
-int pin_led_verte = A4;
+const int pin_led_verte = A4;
   // On declare la variable globale pour le choix du menu car sinon elle se remet a zero a chaque boucle de loop()
-int menu_screen = 1;  // Correction : pas de pointeur ici
+int menu_screen = 1;
   // On declare la variable globale pour l'état actuel du bouton
 bool status_boutton = LOW;
   // On declare la variable globale pour l'ancien état du bouton
@@ -63,10 +61,9 @@ void afficher_temperature(int pin, bool isLM35, char unite) {
   lcd.print(char(223));
     // On se met en 4,1 pour afficher la valeur de la temperature au milieu
   lcd.setCursor(4, 1);
-
     // On converti d'abord en Celsius
   float tempC = valeurmv(pin) / 10.0;
-
+    // Variable temporaire qui va contenir l'unite
   float temp;
     // Conversion selon l'unité
   switch (unite) {
@@ -138,23 +135,23 @@ void loop() {
   switch (menu_screen) {
       // Partie du menu pour afficher la température du LM35 sous plusieurs unités
     case 1: 
-      afficher_temperature(pin_temp, True, 'C'); 
+      afficher_temperature(pin_temp, true, 'C'); 
       break;
     case 2: 
-      afficher_temperature(pin_temp, True, 'F'); 
+      afficher_temperature(pin_temp, true, 'F'); 
       break;
     case 3: 
-      afficher_temperature(pin_temp, True, 'K'); 
+      afficher_temperature(pin_temp, true, 'K'); 
       break;
       // Partie du menu pour afficher la température de comparaison du potard sous plusieurs unités
     case 4: 
-      afficher_temperature(pin_check, False, 'C'); 
+      afficher_temperature(pin_check, false, 'C'); 
       break;
     case 5: 
-      afficher_temperature(pin_check, False, 'F'); 
+      afficher_temperature(pin_check, false, 'F'); 
       break;
     case 6: 
-      afficher_temperature(pin_check, False, 'K'); 
+      afficher_temperature(pin_check, false, 'K'); 
       break;   
     default: 
       break;

@@ -53,6 +53,7 @@ float valeurmv(int pin) {
   return voltage; 
 }
 
+  // Fonction qui donne une information sur la polarisation du transistor T2
 void status_polarisation() {
     // On met le curseur en 0,0 pour commencer l'ecriture
   lcd.setCursor(0,0);

@@ -26,6 +26,8 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
   // Fonction qui va afficher l'entete en fonction de si ca vient du LM35 ou du potard
 void entete(int isLM35, int menu_screen) {
     // En gros, ce switch affiche l'unite en fonction de la position dans le menu (Le plus opti possible que j'ai su faire), ce qui explique les cases doubles
+  
+  lcd.clear();
   lcd.print(isLM35 ? "Temperature en " : "Declencheur en ");
   switch(menu_screen) {
       case 1:
@@ -55,6 +57,7 @@ float valeurmv(int pin) {
 
   // Fonction qui donne une information sur la polarisation du transistor T2
 void status_polarisation() {
+  lcd.clear();
     // On met le curseur en 0,0 pour commencer l'ecriture
   lcd.setCursor(0,0);
 
@@ -76,6 +79,8 @@ void status_polarisation() {
     lcd.print("Non-polaris");
     lcd.print(char(130));
   }
+
+  delay(100);
 }
 
 
@@ -111,6 +116,7 @@ void afficher_temperature(int pin, bool isLM35, char unite) {
 
     // On affiche la valeur
   lcd.print(temp);
+  delay(100);
 }
 
   // Fonction responsable de la gestion de la LED
@@ -192,6 +198,7 @@ void loop() {
       // Partie du menu pour afficher le status de polarization du transistor
     case 7:
       status_polarisation();
+      break;
     default: 
       break;
   }

@@ -1,3 +1,12 @@
+/*******************************************/
+/*                                         */
+/*    main.cpp - Programme arduino UNO     */
+/*  Louis.B, Thomas.V, Audric.L, Julien.T  */
+/*                PMUL1                    */
+/*           Annee 2024-2025               */
+/*                                         */
+/***************************************** */
+
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
@@ -7,12 +16,8 @@ const int pin_temp = A0;
 const int pin_check = A1;
   // On declare la variable globale de la pin pour le boutton de navigation des differents menus
 const int pin_button = A2;
-  // On declare la variable globale de la pin pour la LED rouge
-const int pin_led_rouge = A3;
-  // On declare la variable globale de la pin pour la LED verte
-const int pin_led_verte = A4;
   // On declare la variable globale de la pin pour TP1 (Monitoring de la polarisation du transistor)
-const int pin_tp1 = A5;
+const int pin_tp1 = A3;
   // On declare la variable globale pour le choix du menu car sinon elle se remet a zero a chaque boucle de loop()
 int menu_screen = 1;
   // On declare la variable globale pour l'état actuel du bouton
@@ -25,10 +30,11 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 
   // Fonction qui va afficher l'entete en fonction de si ca vient du LM35 ou du potard
 void entete(int isLM35, int menu_screen) {
-    // En gros, ce switch affiche l'unite en fonction de la position dans le menu (Le plus opti possible que j'ai su faire), ce qui explique les cases doubles
   
   lcd.clear();
+    // Check si la temperature vient du LM35 ou du potentiometre
   lcd.print(isLM35 ? "Temperature en " : "Declencheur en ");
+    // Switch responsable de l'affichage en Celcius, farenheit ou kelvin de la temperature quelqu'onque 
   switch(menu_screen) {
       case 1:
       case 4:
@@ -50,7 +56,7 @@ float valeurmv(int pin) {
     // On lit la valeur en mv de la pin A0
   int sensorValue = analogRead(pin);
     // On assigne voltage a la valeur sur la pin 
-  float voltage = sensorValue * (5000.0 / 1023.0); // CORRECTION: Je reconverti la valeur en mv reel car c'etait pas bon
+  float voltage = sensorValue * 5.16;
     // On renvoie le voltage
   return voltage; 
 }
@@ -61,26 +67,23 @@ void status_polarisation() {
     // On met le curseur en 0,0 pour commencer l'ecriture
   lcd.setCursor(0,0);
 
-  lcd.print("Status de polarisation du transistor");
+  lcd.print("Status transistor");
 
   int status_tp1 = digitalRead(pin_tp1);
     // On met le curseur en 0,1 pour afficher le status sur la ligne en dessous
   lcd.setCursor(0,1);
 
-    // Si le tp1 est en LOW ca veut dire que le transistor T2 est polarise
+    // Si le tp1 est en LOW ca veut dire que le transistor T2 n'est pas polarise
   if(status_tp1 == LOW) {
-      // On ecris polarisé
-    lcd.print("Polaris");
-    lcd.print(char(130));
+      // On ecris non-polarisé
+    lcd.print("Non-polarise");
   }
 
   else {
-      // On ecris non-polarisé
-    lcd.print("Non-polaris");
-    lcd.print(char(130));
+      // On ecris polarisé
+    lcd.print("polarise");
   }
 
-  delay(100);
 }
 
 
@@ -119,23 +122,6 @@ void afficher_temperature(int pin, bool isLM35, char unite) {
   delay(100);
 }
 
-  // Fonction responsable de la gestion de la LED
-void status_led() {
-      // On compare la valeur en mv de la temperature et celle du potard
-      if (valeurmv(pin_temp) > valeurmv(pin_check)) {
-        // Si la valeur de la temperature est plus haute on active la led rouge
-      digitalWrite(pin_led_rouge, HIGH);
-        // On eteinds la led verte sinon on y comprend plus rien
-      digitalWrite(pin_led_verte, LOW);
-    }
-    else {
-        // Si la valeur de la temperature est inferieure on active la led verte
-      digitalWrite(pin_led_verte, HIGH);
-        // On eteinds la led rouge sinon on y comprend plus rien
-      digitalWrite(pin_led_rouge, LOW);  // Correction : éteindre la LED rouge
-    }
-}
-
 void setup() {
     // On initialise l'ecran LCD
   lcd.init();
@@ -143,17 +129,11 @@ void setup() {
   lcd.backlight();
     // On clear l'ecran
   lcd.clear();
-    // Je set la pin A3 en output pour allumer une LED rouge quand la temperature depasse le seuil
-  pinMode(pin_led_rouge, OUTPUT);
-    // Je set la pin A4 en output pour allumer une LED verte quand la temperature ne depasse pas le seuil
-  pinMode(pin_led_verte, OUTPUT);
     // Je set la pin du boutton en lecture uniquement (De bonne pratique)
   digitalRead(pin_button);
 }
 
 void loop() {
-    // On appel la fonction de gestion de la LED
-  status_led();
 
     // On lit la valeur de la pin du bouton
   status_boutton = digitalRead(pin_button);
@@ -172,6 +152,9 @@ void loop() {
 
     // On sauvegarde l'état actuel pour le prochain tour
   old_status_boutton = status_boutton;
+
+    // Delai d'une seconde avant de rafraichir l'ecran avec de nouvelles valeurs
+  delay(1000);
 
     // Switch pour les différents menus possibles et appel de leurs fonctions respectives
   switch (menu_screen) {

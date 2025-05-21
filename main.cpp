@@ -56,7 +56,7 @@ float valeurmv(int pin) {
     // On lit la valeur en mv de la pin A0
   int sensorValue = analogRead(pin);
     // On assigne voltage a la valeur sur la pin 
-  float voltage = sensorValue * 5.16;
+  float voltage = sensorValue * (5.16/1023);
     // On renvoie le voltage
   return voltage; 
 }
@@ -67,7 +67,7 @@ void status_polarisation() {
     // On met le curseur en 0,0 pour commencer l'ecriture
   lcd.setCursor(0,0);
 
-  lcd.print("Status transistor");
+  lcd.print("Statut T1-T2");
 
   int status_tp1 = digitalRead(pin_tp1);
     // On met le curseur en 0,1 pour afficher le status sur la ligne en dessous
